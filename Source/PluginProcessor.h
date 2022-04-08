@@ -19,6 +19,7 @@ public:
   ConekoAudioProcessor();
   ~ConekoAudioProcessor() override;
 
+  juce::AudioSampleBuffer impulseResponseBuffer;
   //==============================================================================
   void prepareToPlay(double sampleRate, int samplesPerBlock) override;
   void releaseResources() override;
