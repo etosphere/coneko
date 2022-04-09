@@ -1,9 +1,9 @@
- /*
-  ==============================================================================
+/*
+ ==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin processor.
+   This file contains the basic framework code for a JUCE plugin processor.
 
-  ==============================================================================
+ ==============================================================================
 */
 
 #include "PluginProcessor.h"
@@ -20,7 +20,8 @@ ConekoAudioProcessor::ConekoAudioProcessor()
 #endif
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-      )
+              ),
+      apvts(*this, nullptr, "Parameters", createParameters())
 #endif
 {
 }
@@ -78,8 +79,20 @@ void ConekoAudioProcessor::changeProgramName(int index,
 //==============================================================================
 void ConekoAudioProcessor::prepareToPlay(double sampleRate,
                                          int samplesPerBlock) {
-  // Use this method as the place to do any pre-playback
-  // initialisation that you need..
+  // pre-initialization process
+  juce::dsp::ProcessSpec spec = juce::dsp::ProcessSpec();
+  spec.sampleRate = sampleRate;
+  spec.numChannels = getTotalNumOutputChannels();
+  spec.maximumBlockSize = samplesPerBlock;
+
+  inputGainer.prepare(spec);
+  inputGainer.reset();
+  outputGainer.prepare(spec);
+  outputGainer.reset();
+  dryWetMixer.prepare(spec);
+  dryWetMixer.reset();
+  convolver.prepare(spec);
+  convolver.reset();
 }
 
 void ConekoAudioProcessor::releaseResources() {
@@ -128,17 +141,26 @@ void ConekoAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer,
   for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
     buffer.clear(i, 0, buffer.getNumSamples());
 
-  // This is the place where you'd normally do the guts of your plugin's
-  // audio processing...
-  // Make sure to reset the state if your inner loop is processing
-  // the samples and the outer loop is handling the channels.
-  // Alternatively, you can process the samples with the channels
-  // interleaved by keeping the same state.
-  for (int channel = 0; channel < totalNumInputChannels; ++channel) {
-    auto *channelData = buffer.getWritePointer(channel);
+  auto inputGainValue = apvts.getRawParameterValue("InputGain");
+  auto outputGainValue = apvts.getRawParameterValue("OutputGain");
+  auto dryWetMixValue = apvts.getRawParameterValue("DryWetMix");
+  // for (int channel = 0; channel < totalNumInputChannels; ++channel) {
+  //   auto *channelData = buffer.getWritePointer(channel);
+  //   for (auto sample = 0; sample < buffer.getNumSamples(); ++sample) {
+  //      channelData[sample] *= 1;
+  //   }
+  // }
 
-    // ..do something to the data...
-  }
+  inputGainer.setGainDecibels(inputGainValue->load());
+  outputGainer.setGainDecibels(outputGainValue->load());
+  dryWetMixer.setWetMixProportion(dryWetMixValue->load() / 100.0f);
+  auto block = juce::dsp::AudioBlock<float>(buffer);
+  auto context = juce::dsp::ProcessContextReplacing<float>(block);
+  inputGainer.process(context);
+  dryWetMixer.pushDrySamples(block);
+  convolver.process(context);
+  dryWetMixer.mixWetSamples(block);
+  outputGainer.process(context);
 }
 
 //==============================================================================
@@ -162,6 +184,96 @@ void ConekoAudioProcessor::setStateInformation(const void *data,
   // You should use this method to restore your parameters from this memory
   // block, whose contents will have been created by the getStateInformation()
   // call.
+}
+
+void ConekoAudioProcessor::loadImpulseResponse() {
+  // normalized IR signal
+  float globalMaxMagnitude =
+      rawIRBuffer.getMagnitude(0, rawIRBuffer.getNumSamples());
+  rawIRBuffer.applyGain(1.0f / (globalMaxMagnitude + 0.01));
+
+  // trim IR signal
+  int numSamples = rawIRBuffer.getNumSamples();
+  int blockSize = static_cast<int>(std::floor(this->getSampleRate()) / 100);
+  int startBlockNum = 0;
+  int endBlockNum = numSamples / blockSize;
+  float localMaxMagnitude = 0.0f;
+  while ((startBlockNum + 1) * blockSize < numSamples) {
+    localMaxMagnitude =
+        rawIRBuffer.getMagnitude(startBlockNum * blockSize, blockSize);
+    if (localMaxMagnitude > 0.001) {
+      break;
+    }
+    ++startBlockNum;
+  }
+  localMaxMagnitude = 0.0f;
+  while ((endBlockNum - 1) * blockSize > 0) {
+    --endBlockNum;
+    localMaxMagnitude =
+        rawIRBuffer.getMagnitude(endBlockNum * blockSize, blockSize);
+    if (localMaxMagnitude > 0.001) {
+      break;
+    }
+  }
+
+  int trimmedNumSamples;
+  if (endBlockNum * blockSize < numSamples) {
+    trimmedNumSamples = (endBlockNum - startBlockNum) * blockSize - 1;
+  } else {
+    trimmedNumSamples = numSamples - startBlockNum * blockSize;
+  }
+  modifiedIRBuffer.setSize(rawIRBuffer.getNumChannels(), trimmedNumSamples,
+                           false, true, false);
+  for (int channel = 0; channel < rawIRBuffer.getNumChannels(); ++channel) {
+    for (int sample = 0; sample < trimmedNumSamples; ++sample) {
+      modifiedIRBuffer.setSample(
+          channel, sample,
+          rawIRBuffer.getSample(channel, sample + startBlockNum * blockSize));
+    }
+  }
+
+  auto decayTimeParam = apvts.getParameter("DecayTime");
+  double decayTime =
+      static_cast<double>(trimmedNumSamples) / this->getSampleRate();
+  decayTimeParam->setValueNotifyingHost(decayTime / (8.0 - 0.01));
+
+  updateImpulseResponse();
+}
+
+void ConekoAudioProcessor::updateImpulseResponse() {
+  convolver.loadImpulseResponse(
+      std::move(modifiedIRBuffer), this->getSampleRate(),
+      juce::dsp::Convolution::Stereo::yes, juce::dsp::Convolution::Trim::no,
+      juce::dsp::Convolution::Normalise::yes);
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout
+ConekoAudioProcessor::createParameters() {
+  std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
+
+  juce::NormalisableRange<float> gainRange =
+      juce::NormalisableRange<float>(-72.0f, 36.0f, 0.1f);
+  gainRange.setSkewForCentre(0.0f);
+  juce::NormalisableRange<float> dryWetMixRange =
+      juce::NormalisableRange<float>(0.0f, 100.0f, 1.0f);
+  dryWetMixRange.setSkewForCentre(50.0f);
+  juce::NormalisableRange<float> decayTimeRange =
+      juce::NormalisableRange<float>(0.01f, 8.00f, 0.01f);
+  decayTimeRange.setSkewForCentre(3.0f);
+  juce::NormalisableRange<float> preDelayTimeRange =
+      juce::NormalisableRange<float>(0.0f, 1000.0f, 1.0f, 0.5f);
+
+  parameters.push_back(std::make_unique<juce::AudioParameterFloat>(
+      "InputGain", "Input Gain", gainRange, 0.0f));
+  parameters.push_back(std::make_unique<juce::AudioParameterFloat>(
+      "OutputGain", "Output Gain", gainRange, 0.0f));
+  parameters.push_back(std::make_unique<juce::AudioParameterFloat>(
+      "DryWetMix", "Mix", dryWetMixRange, 100.0f));
+  parameters.push_back(std::make_unique<juce::AudioParameterFloat>(
+      "DecayTime", "Decay", decayTimeRange, 3.0f));
+  parameters.push_back(std::make_unique<juce::AudioParameterFloat>(
+      "PreDelayTime", "Pre-delay", preDelayTimeRange, 0.0f));
+  return {parameters.begin(), parameters.end()};
 }
 
 //==============================================================================

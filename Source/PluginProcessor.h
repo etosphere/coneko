@@ -15,11 +15,13 @@
  */
 class ConekoAudioProcessor : public juce::AudioProcessor {
 public:
+  using APVTS = juce::AudioProcessorValueTreeState;
   //==============================================================================
   ConekoAudioProcessor();
   ~ConekoAudioProcessor() override;
 
-  juce::AudioSampleBuffer impulseResponseBuffer;
+  juce::AudioBuffer<float> rawIRBuffer;
+  juce::AudioBuffer<float> modifiedIRBuffer;
   //==============================================================================
   void prepareToPlay(double sampleRate, int samplesPerBlock) override;
   void releaseResources() override;
@@ -53,7 +55,18 @@ public:
   void getStateInformation(juce::MemoryBlock &destData) override;
   void setStateInformation(const void *data, int sizeInBytes) override;
 
+  void loadImpulseResponse();
+  void updateImpulseResponse();
+
+  APVTS apvts;
+
 private:
+  APVTS::ParameterLayout createParameters();
+
+  juce::dsp::Gain<float> inputGainer;
+  juce::dsp::Gain<float> outputGainer;
+  juce::dsp::DryWetMixer<float> dryWetMixer;
+  juce::dsp::Convolution convolver;
   //==============================================================================
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ConekoAudioProcessor)
 };

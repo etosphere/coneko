@@ -14,9 +14,10 @@
 //==============================================================================
 /**
  */
-class ConekoAudioProcessorEditor : public juce::AudioProcessorEditor,
-                                   private juce::Slider::Listener {
+class ConekoAudioProcessorEditor : public juce::AudioProcessorEditor {
 public:
+  using APVTS = juce::AudioProcessorValueTreeState;
+
   ConekoAudioProcessorEditor(ConekoAudioProcessor &);
   ~ConekoAudioProcessorEditor() override;
 
@@ -25,24 +26,31 @@ public:
   void resized() override;
 
 private:
-  void sliderValueChanged(juce::Slider *slider) override;
-
   // This reference is provided as a quick way for your editor to
   // access the processor object that created it.
   ConekoAudioProcessor &audioProcessor;
 
-  juce::Slider inputLevelSlider;
-  juce::Label inputLevelLabel;
-  juce::Slider outputLevelSlider;
-  juce::Label outputLevelLabel;
-  juce::Slider wetMixSlider;
-  juce::Label wetMixLabel;
-  juce::Slider decayTimeSlider;
-  juce::Label decayTimeLabel;
-
   juce::AudioFormatManager formatManager;
   std::unique_ptr<juce::FileChooser> fileChooser;
   juce::TextButton openIRFileButton;
+  juce::Label irFileLabel;
+
+  juce::Slider inputGainSlider;
+  juce::Label inputGainLabel;
+  std::unique_ptr<APVTS::SliderAttachment> inputGainSliderAttachment;
+  juce::Slider outputGainSlider;
+  juce::Label outputGainLabel;
+  std::unique_ptr<APVTS::SliderAttachment> outputGainSliderAttachment;
+  juce::Slider dryWetMixSlider;
+  juce::Label dryWetMixLabel;
+  std::unique_ptr<APVTS::SliderAttachment> dryWetMixSliderAttachment;
+  juce::Slider decayTimeSlider;
+  juce::Label decayTimeLabel;
+  std::unique_ptr<APVTS::SliderAttachment> decayTimeSliderAttachment;
+  juce::Slider preDelayTimeSlider;
+  juce::Label preDelayTimeLabel;
+  std::unique_ptr<APVTS::SliderAttachment> preDelayTimeSliderAttachment;
+
   void openButtonClicked();
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ConekoAudioProcessorEditor)
