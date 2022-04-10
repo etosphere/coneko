@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "CustomStyle.h"
 #include "PluginProcessor.h"
 #include <JuceHeader.h>
 
@@ -29,6 +30,8 @@ private:
   // This reference is provided as a quick way for your editor to
   // access the processor object that created it.
   ConekoAudioProcessor &audioProcessor;
+
+  juce::CustomStyle customStyle;
 
   juce::AudioFormatManager formatManager;
   std::unique_ptr<juce::FileChooser> fileChooser;

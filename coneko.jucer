@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="yymIIN" name="coneko" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              projectLineFeed="&#10;" pluginFormats="buildAU,buildStandalone,buildUnity,buildVST3"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" projectLineFeed="&#10;"
+              pluginFormats="buildAU,buildStandalone,buildUnity,buildVST3"
               pluginCode="Cnko" pluginRTASCategory="8" pluginAAXCategory="8"
-              cppLanguageStandard="20" pluginVST3Category="Reverb" companyName="etosphere">
+              cppLanguageStandard="20" pluginVST3Category="Reverb" companyName="etosphere"
+              displaySplashScreen="1" splashScreenColour="Light">
   <MAINGROUP id="e9u98w" name="coneko">
     <GROUP id="{F7187CB0-AF72-C7CB-F820-02E355AB25F1}" name="soundtouch">
       <FILE id="L571Y4" name="AAFilter.cpp" compile="1" resource="0" file="soundtouch/AAFilter.cpp"/>
@@ -57,6 +58,10 @@
       <FILE id="UzhWx2" name="TDStretch.h" compile="0" resource="0" file="soundtouch/TDStretch.h"/>
     </GROUP>
     <GROUP id="{5FC00DE4-C31C-C498-1696-863668371BCC}" name="Source">
+      <FILE id="ALO6Je" name="Spartan-Medium.ttf" compile="0" resource="1"
+            file="Resources/Spartan-Medium.ttf"/>
+      <FILE id="meGx9e" name="CustomStyle.cpp" compile="1" resource="0" file="Source/CustomStyle.cpp"/>
+      <FILE id="drsrOQ" name="CustomStyle.h" compile="0" resource="0" file="Source/CustomStyle.h"/>
       <FILE id="Tm7276" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="Xg2nzA" name="PluginProcessor.h" compile="0" resource="0"

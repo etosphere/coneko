@@ -15,6 +15,7 @@ ConekoAudioProcessorEditor::ConekoAudioProcessorEditor(ConekoAudioProcessor &p)
   // Make sure that before the constructor has finished, you've set the
   // editor's size to whatever you need it to be.
   setSize(750, 300);
+  juce::LookAndFeel::setDefaultLookAndFeel(&customStyle);
 
   // set AudioFormatManager for reading IR file
   formatManager.registerBasicFormats();
@@ -154,20 +155,22 @@ ConekoAudioProcessorEditor::ConekoAudioProcessorEditor(ConekoAudioProcessor &p)
       audioProcessor.apvts, "HighShelfGain", highShelfGainSlider);
 }
 
-ConekoAudioProcessorEditor::~ConekoAudioProcessorEditor() {}
+ConekoAudioProcessorEditor::~ConekoAudioProcessorEditor() {
+  juce::LookAndFeel::setDefaultLookAndFeel(nullptr);
+}
 
 //==============================================================================
 void ConekoAudioProcessorEditor::paint(juce::Graphics &g) {
   // (Our component is opaque, so we must completely fill the background with a
   // solid colour)
 
-  g.fillAll(
-      getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
-  // g.fillAll(juce::Colours::white);
-  // g.setColour(juce::Colours::black);
-  g.setFont(15.0f);
-  g.drawFittedText("Coneko", 0, 0, getWidth() - 10, 30,
-                   juce::Justification::centredRight, 1);
+  // g.fillAll(
+  //     getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+  g.fillAll(juce::Colour::fromRGB(252, 248, 237));
+  g.setFont(32.0f);
+  g.setColour(juce::Colour::fromRGB(111, 76, 91));
+  g.drawFittedText("Coneko", getWidth() - 80 - 15, 15, 80, 20,
+                   juce::Justification::centred, 1);
 
   g.setColour(juce::Colour::fromRGB(158, 119, 119));
 
