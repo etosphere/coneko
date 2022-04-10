@@ -6,6 +6,56 @@
               pluginCode="Cnko" pluginRTASCategory="8" pluginAAXCategory="8"
               cppLanguageStandard="20" pluginVST3Category="Reverb" companyName="etosphere">
   <MAINGROUP id="e9u98w" name="coneko">
+    <GROUP id="{F7187CB0-AF72-C7CB-F820-02E355AB25F1}" name="soundtouch">
+      <FILE id="L571Y4" name="AAFilter.cpp" compile="1" resource="0" file="soundtouch/AAFilter.cpp"/>
+      <FILE id="QXO7at" name="AAFilter.h" compile="0" resource="0" file="soundtouch/AAFilter.h"/>
+      <FILE id="Q33DFF" name="BPMDetect.cpp" compile="1" resource="0" file="soundtouch/BPMDetect.cpp"/>
+      <FILE id="CwRHUZ" name="BPMDetect.h" compile="0" resource="0" file="soundtouch/BPMDetect.h"/>
+      <FILE id="QgXPfS" name="COPYING.TXT" compile="0" resource="1" file="soundtouch/COPYING.TXT"/>
+      <FILE id="dz9E3Q" name="cpu_detect.h" compile="0" resource="0" file="soundtouch/cpu_detect.h"/>
+      <FILE id="io5g9r" name="cpu_detect_x86.cpp" compile="1" resource="0"
+            file="soundtouch/cpu_detect_x86.cpp"/>
+      <FILE id="lkpUcO" name="FIFOSampleBuffer.cpp" compile="1" resource="0"
+            file="soundtouch/FIFOSampleBuffer.cpp"/>
+      <FILE id="maQgPo" name="FIFOSampleBuffer.h" compile="0" resource="0"
+            file="soundtouch/FIFOSampleBuffer.h"/>
+      <FILE id="B9ouyi" name="FIFOSamplePipe.h" compile="0" resource="0"
+            file="soundtouch/FIFOSamplePipe.h"/>
+      <FILE id="BACwZJ" name="FIRFilter.cpp" compile="1" resource="0" file="soundtouch/FIRFilter.cpp"/>
+      <FILE id="dJdTKK" name="FIRFilter.h" compile="0" resource="0" file="soundtouch/FIRFilter.h"/>
+      <FILE id="nmAb8x" name="InterpolateCubic.cpp" compile="1" resource="0"
+            file="soundtouch/InterpolateCubic.cpp"/>
+      <FILE id="dTUP8H" name="InterpolateCubic.h" compile="0" resource="0"
+            file="soundtouch/InterpolateCubic.h"/>
+      <FILE id="f0CJNs" name="InterpolateLinear.cpp" compile="1" resource="0"
+            file="soundtouch/InterpolateLinear.cpp"/>
+      <FILE id="y1k9ze" name="InterpolateLinear.h" compile="0" resource="0"
+            file="soundtouch/InterpolateLinear.h"/>
+      <FILE id="enPH3y" name="InterpolateShannon.cpp" compile="1" resource="0"
+            file="soundtouch/InterpolateShannon.cpp"/>
+      <FILE id="qDwI6Z" name="InterpolateShannon.h" compile="0" resource="0"
+            file="soundtouch/InterpolateShannon.h"/>
+      <FILE id="Rdfyyl" name="mmx_optimized.cpp" compile="1" resource="0"
+            file="soundtouch/mmx_optimized.cpp"/>
+      <FILE id="uPHKJJ" name="PeakFinder.cpp" compile="1" resource="0" file="soundtouch/PeakFinder.cpp"/>
+      <FILE id="IwhkUb" name="PeakFinder.h" compile="0" resource="0" file="soundtouch/PeakFinder.h"/>
+      <FILE id="aEqfbq" name="RateTransposer.cpp" compile="1" resource="0"
+            file="soundtouch/RateTransposer.cpp"/>
+      <FILE id="l43I3b" name="RateTransposer.h" compile="0" resource="0"
+            file="soundtouch/RateTransposer.h"/>
+      <FILE id="ytvWjc" name="README.html" compile="0" resource="1" file="soundtouch/README.html"/>
+      <FILE id="OYeyOA" name="SoundTouch.cpp" compile="1" resource="0" file="soundtouch/SoundTouch.cpp"/>
+      <FILE id="vprL9e" name="SoundTouch.h" compile="0" resource="0" file="soundtouch/SoundTouch.h"/>
+      <FILE id="ltUSEI" name="soundtouch_config.h" compile="0" resource="0"
+            file="soundtouch/soundtouch_config.h"/>
+      <FILE id="HZIEqg" name="soundtouch_config.h.in" compile="0" resource="1"
+            file="soundtouch/soundtouch_config.h.in"/>
+      <FILE id="XU8RDP" name="sse_optimized.cpp" compile="1" resource="0"
+            file="soundtouch/sse_optimized.cpp"/>
+      <FILE id="NxHCWP" name="STTypes.h" compile="0" resource="0" file="soundtouch/STTypes.h"/>
+      <FILE id="wD5aIB" name="TDStretch.cpp" compile="1" resource="0" file="soundtouch/TDStretch.cpp"/>
+      <FILE id="UzhWx2" name="TDStretch.h" compile="0" resource="0" file="soundtouch/TDStretch.h"/>
+    </GROUP>
     <GROUP id="{5FC00DE4-C31C-C498-1696-863668371BCC}" name="Source">
       <FILE id="Tm7276" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
