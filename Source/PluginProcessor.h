@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "../soundtouch/SoundTouch.h"
 #include <JuceHeader.h>
 
 //==============================================================================
@@ -20,8 +21,6 @@ public:
   ConekoAudioProcessor();
   ~ConekoAudioProcessor() override;
 
-  juce::AudioBuffer<float> rawIRBuffer;
-  juce::AudioBuffer<float> modifiedIRBuffer;
   //==============================================================================
   void prepareToPlay(double sampleRate, int samplesPerBlock) override;
   void releaseResources() override;
@@ -55,18 +54,41 @@ public:
   void getStateInformation(juce::MemoryBlock &destData) override;
   void setStateInformation(const void *data, int sizeInBytes) override;
 
+  void setIRBufferSize(int newNumChannels, int newNumSamples,
+                       bool keepExistingContent = false,
+                       bool clearExtraSpace = false,
+                       bool avoidReallocating = false);
+  juce::AudioBuffer<float> &getOriginalIR();
+  juce::AudioBuffer<float> &getModifiedIR();
+
   void loadImpulseResponse();
-  void updateImpulseResponse();
+  void updateImpulseResponse(juce::AudioBuffer<float> irBuffer);
+
+  void updateIRParameters();
+  void updateFilterParameters();
 
   APVTS apvts;
 
 private:
+  juce::AudioBuffer<float> originalIRBuffer;
+  juce::AudioBuffer<float> modifiedIRBuffer;
+
+  soundtouch::SoundTouch soundtouch;
+
   APVTS::ParameterLayout createParameters();
 
   juce::dsp::Gain<float> inputGainer;
   juce::dsp::Gain<float> outputGainer;
   juce::dsp::DryWetMixer<float> dryWetMixer;
+  juce::dsp::DelayLine<float> delay;
   juce::dsp::Convolution convolver;
+  juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>,
+                                 juce::dsp::IIR::Coefficients<float>>
+      lowShelfFilter;
+  juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>,
+                                 juce::dsp::IIR::Coefficients<float>>
+      highShelfFilter;
+
   //==============================================================================
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ConekoAudioProcessor)
 };

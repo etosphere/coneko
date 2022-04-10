@@ -19,6 +19,9 @@ ConekoAudioProcessorEditor::ConekoAudioProcessorEditor(ConekoAudioProcessor &p)
   // set AudioFormatManager for reading IR file
   formatManager.registerBasicFormats();
 
+  const auto sliderStyle = juce::Slider::RotaryHorizontalVerticalDrag;
+  const auto sliderLabelJustification = juce::Justification::centred;
+
   addAndMakeVisible(openIRFileButton);
   openIRFileButton.setButtonText("Open IR File...");
   openIRFileButton.onClick = [this] { openButtonClicked(); };
@@ -26,72 +29,129 @@ ConekoAudioProcessorEditor::ConekoAudioProcessorEditor(ConekoAudioProcessor &p)
   irFileLabel.setText("", juce::dontSendNotification);
   irFileLabel.setJustificationType(juce::Justification::centredLeft);
 
+  addAndMakeVisible(reverseButton);
+  reverseButton.setButtonText("Reverse IR");
+  reverseButton.setEnabled(enableIRParameters);
+  reverseButton.onClick = [this] {
+    audioProcessor.updateIRParameters();
+    shouldPaintWaveform = true;
+    repaint();
+  };
+  reverseButtonAttachment = std::make_unique<APVTS::ButtonAttachment>(
+      audioProcessor.apvts, "Reversed", reverseButton);
+
+  addAndMakeVisible(bypassButton);
+  bypassButton.setButtonText("Bypass");
+  bypassButtonAttachment = std::make_unique<APVTS::ButtonAttachment>(
+      audioProcessor.apvts, "Bypassed", bypassButton);
+
   addAndMakeVisible(inputGainSlider);
-  inputGainSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+  inputGainSlider.setSliderStyle(sliderStyle);
   inputGainSlider.setTextValueSuffix(" dB");
   inputGainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 15);
   // inputLevelSlider.setPopupDisplayEnabled(true, true, this);
-  // inputGainSlider.onValueChange = [this] {};
-  addAndMakeVisible(inputGainLabel);
-  inputGainLabel.setText("Input", juce::dontSendNotification);
-  inputGainLabel.setJustificationType(juce::Justification::centred);
-  inputGainLabel.attachToComponent(&inputGainSlider, false);
+  createLabel(inputGainLabel, "Input", &inputGainSlider);
   inputGainSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "InputGain", inputGainSlider);
 
   addAndMakeVisible(outputGainSlider);
-  outputGainSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+  outputGainSlider.setSliderStyle(sliderStyle);
   outputGainSlider.setTextValueSuffix(" dB");
   outputGainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 15);
   // outputLevelSlider.setPopupDisplayEnabled(true, true, this);
-  // outputGainSlider.onValueChange = [this] {};
-  addAndMakeVisible(outputGainLabel);
-  outputGainLabel.setText("Output", juce::dontSendNotification);
-  outputGainLabel.setJustificationType(juce::Justification::centred);
-  outputGainLabel.attachToComponent(&outputGainSlider, false);
+  createLabel(outputGainLabel, "Output", &outputGainSlider);
   outputGainSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "OutputGain", outputGainSlider);
 
   addAndMakeVisible(dryWetMixSlider);
-  dryWetMixSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+  dryWetMixSlider.setSliderStyle(sliderStyle);
   dryWetMixSlider.setTextValueSuffix(" %");
   dryWetMixSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 15);
   // wetMixSlider.setPopupDisplayEnabled(true, true, this);
-  // dryWetMixSlider.onValueChange = [this] {};
-  addAndMakeVisible(dryWetMixLabel);
-  dryWetMixLabel.setText("Mix", juce::dontSendNotification);
-  dryWetMixLabel.setJustificationType(juce::Justification::centred);
-  dryWetMixLabel.attachToComponent(&dryWetMixSlider, false);
+  createLabel(dryWetMixLabel, "Mix", &dryWetMixSlider);
   dryWetMixSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "DryWetMix", dryWetMixSlider);
 
   addAndMakeVisible(decayTimeSlider);
-  decayTimeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+  decayTimeSlider.setSliderStyle(sliderStyle);
   decayTimeSlider.setTextValueSuffix(" s");
   decayTimeSlider.setTextBoxStyle(
       juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
   // decayTimeSlider.setPopupDisplayEnabled(true, true, this);
-  // decayTimeSlider.onValueChange = [this] {};
-  addAndMakeVisible(decayTimeLabel);
-  decayTimeLabel.setText("Decay", juce::dontSendNotification);
-  decayTimeLabel.setJustificationType(juce::Justification::centred);
-  decayTimeLabel.attachToComponent(&decayTimeSlider, false);
+  decayTimeSlider.setEnabled(enableIRParameters);
+  decayTimeSlider.onDragEnd = [this] {
+    audioProcessor.updateIRParameters();
+    shouldPaintWaveform = true;
+    repaint();
+  };
+  createLabel(decayTimeLabel, "Decay", &decayTimeSlider);
   decayTimeSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "DecayTime", decayTimeSlider);
 
   addAndMakeVisible(preDelayTimeSlider);
-  preDelayTimeSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+  preDelayTimeSlider.setSliderStyle(sliderStyle);
   preDelayTimeSlider.setTextValueSuffix(" ms");
   preDelayTimeSlider.setTextBoxStyle(
       juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
   // preDelayTimeSlider.setPopupDisplayEnabled(true, true, this);
-  // preDelayTimeSlider.onValueChange = [this] {};
-  addAndMakeVisible(preDelayTimeLabel);
-  preDelayTimeLabel.setText("Pre-delay", juce::dontSendNotification);
-  preDelayTimeLabel.setJustificationType(juce::Justification::centred);
-  preDelayTimeLabel.attachToComponent(&preDelayTimeSlider, false);
+  // preDelayTimeSlider.onDragEnd = [this] {
+  //  audioProcessor.updateIRParameters();
+  //  shouldPaintWaveform = true;
+  //  repaint();
+  //};
+  createLabel(preDelayTimeLabel, "Pre-delay", &preDelayTimeSlider);
   preDelayTimeSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "PreDelayTime", preDelayTimeSlider);
+
+  addAndMakeVisible(stereoWidthSlider);
+  stereoWidthSlider.setSliderStyle(sliderStyle);
+  stereoWidthSlider.setTextValueSuffix(" %");
+  stereoWidthSlider.setTextBoxStyle(
+      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
+  // stereoWidthSlider.setPopupDisplayEnabled(true, true, this);
+  createLabel(stereoWidthLabel, "Width", &stereoWidthSlider);
+  stereoWidthSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
+      audioProcessor.apvts, "StereoWidth", stereoWidthSlider);
+
+  addAndMakeVisible(lowShelfFreqSlider);
+  lowShelfFreqSlider.setSliderStyle(sliderStyle);
+  lowShelfFreqSlider.setTextValueSuffix(" Hz");
+  lowShelfFreqSlider.setTextBoxStyle(
+      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
+  // lowShelfFreqSlider.setPopupDisplayEnabled(true, true, this);
+  createLabel(lowShelfFreqLabel, "LowFreq", &lowShelfFreqSlider);
+  lowShelfFreqSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
+      audioProcessor.apvts, "LowShelfFreq", lowShelfFreqSlider);
+
+  addAndMakeVisible(lowShelfGainSlider);
+  lowShelfGainSlider.setSliderStyle(sliderStyle);
+  lowShelfGainSlider.setTextValueSuffix(" dB");
+  lowShelfGainSlider.setTextBoxStyle(
+      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
+  // lowShelfFreqSlider.setPopupDisplayEnabled(true, true, this);
+  createLabel(lowShelfGainLabel, "LowGain", &lowShelfGainSlider);
+  lowShelfGainSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
+      audioProcessor.apvts, "LowShelfGain", lowShelfGainSlider);
+
+  addAndMakeVisible(highShelfFreqSlider);
+  highShelfFreqSlider.setSliderStyle(sliderStyle);
+  highShelfFreqSlider.setTextValueSuffix(" Hz");
+  highShelfFreqSlider.setTextBoxStyle(
+      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
+  // highShelfFreqSlider.setPopupDisplayEnabled(true, true, this);
+  createLabel(highShelfFreqLabel, "HighFreq", &highShelfFreqSlider);
+  highShelfFreqSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
+      audioProcessor.apvts, "HighShelfFreq", highShelfFreqSlider);
+
+  addAndMakeVisible(highShelfGainSlider);
+  highShelfGainSlider.setSliderStyle(sliderStyle);
+  highShelfGainSlider.setTextValueSuffix(" dB");
+  highShelfGainSlider.setTextBoxStyle(
+      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
+  // lowShelfFreqSlider.setPopupDisplayEnabled(true, true, this);
+  createLabel(highShelfGainLabel, "HighGain", &highShelfGainSlider);
+  highShelfGainSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
+      audioProcessor.apvts, "HighShelfGain", highShelfGainSlider);
 }
 
 ConekoAudioProcessorEditor::~ConekoAudioProcessorEditor() {}
@@ -108,33 +168,89 @@ void ConekoAudioProcessorEditor::paint(juce::Graphics &g) {
   g.setFont(15.0f);
   g.drawFittedText("Coneko", 0, 0, getWidth() - 10, 30,
                    juce::Justification::centredRight, 1);
+
+  g.setColour(juce::Colour::fromRGB(158, 119, 119));
+
+  if (shouldPaintWaveform == true) {
+    const int waveformWidth = 80 * 3;
+    const int waveformHeight = 100;
+
+    juce::Path waveformPath;
+    waveformValues.clear();
+    waveformPath.startNewSubPath(15, waveformHeight + 60);
+
+    auto buffer = audioProcessor.getModifiedIR();
+    if (buffer.getNumSamples() < 1) {
+      buffer = audioProcessor.getOriginalIR();
+    }
+    const float waveformResolution = 1024.0f;
+    const int ratio =
+        static_cast<int>(buffer.getNumSamples() / waveformResolution);
+
+    auto bufferPointer = buffer.getReadPointer(0);
+    for (int sample = 0; sample < buffer.getNumSamples(); sample += ratio) {
+      waveformValues.push_back(juce::Decibels::gainToDecibels<float>(
+          std::fabsf(bufferPointer[sample]), -72.0f));
+    }
+    for (int xPos = 0; xPos < waveformValues.size(); ++xPos) {
+      auto yPos = juce::jmap<float>(waveformValues[xPos], -72.0f, 0.0f,
+                                    waveformHeight + 60, 60);
+      waveformPath.lineTo(15 + xPos / waveformResolution * waveformWidth, yPos);
+    }
+
+    g.strokePath(waveformPath, juce::PathStrokeType(1.0f));
+
+    shouldPaintWaveform = false;
+  }
 }
 
 void ConekoAudioProcessorEditor::resized() {
   // This is generally where you'll want to lay out the positions of any
   // subcomponents in your editor..
+  const int topBottomMargin = 15;
+  const int leftRightMargin = 15;
 
-  const int leftMargin = 15;
-  const int topMargin = 20;
-  const int bottomMargin = 20;
   const int dialWidth = 80;
   const int dialHeight = 90;
-  openIRFileButton.setBounds(leftMargin, topMargin, dialWidth * 3, 40);
-  irFileLabel.setBounds(leftMargin, topMargin + 40, dialWidth * 3, 20);
-  inputGainSlider.setBounds(leftMargin, getHeight() - bottomMargin - dialHeight,
+
+  openIRFileButton.setBounds(leftRightMargin, topBottomMargin, dialWidth * 3,
+                             40);
+  irFileLabel.setBounds(leftRightMargin, topBottomMargin + 45, dialWidth * 3,
+                        20);
+  reverseButton.setBounds(leftRightMargin + dialWidth * 2, topBottomMargin + 40,
+                          dialWidth, 30);
+  bypassButton.setBounds(getWidth() - leftRightMargin - dialWidth * 3,
+                         topBottomMargin, dialWidth, 20);
+  inputGainSlider.setBounds(leftRightMargin,
+                            getHeight() - topBottomMargin - dialHeight,
                             dialWidth, dialHeight);
-  outputGainSlider.setBounds(leftMargin + dialWidth,
-                             getHeight() - bottomMargin - dialHeight, dialWidth,
-                             dialHeight);
-  dryWetMixSlider.setBounds(leftMargin + dialWidth * 2,
-                            getHeight() - bottomMargin - dialHeight, dialWidth,
-                            dialHeight);
-  decayTimeSlider.setBounds(leftMargin + dialWidth * 3,
-                            getHeight() - bottomMargin - dialWidth * 4 +
-                                dialHeight,
-                            dialWidth * 3, dialWidth * 4 - dialHeight);
-  preDelayTimeSlider.setBounds(getWidth() - leftMargin - dialWidth * 3,
-                               dialHeight, dialWidth, dialHeight);
+  outputGainSlider.setBounds(leftRightMargin + dialWidth,
+                             getHeight() - topBottomMargin - dialHeight,
+                             dialWidth, dialHeight);
+  dryWetMixSlider.setBounds(leftRightMargin + dialWidth * 2,
+                            getHeight() - topBottomMargin - dialHeight,
+                            dialWidth, dialHeight);
+  decayTimeSlider.setBounds(leftRightMargin + dialWidth * 3,
+                            getHeight() - topBottomMargin - dialHeight * 3 + 30,
+                            dialWidth * 3, dialHeight * 3 - 30);
+  preDelayTimeSlider.setBounds(getWidth() - leftRightMargin - dialWidth * 3,
+                               topBottomMargin + dialHeight / 3 * 2, dialWidth,
+                               dialHeight);
+  stereoWidthSlider.setBounds(getWidth() - leftRightMargin - dialWidth * 3,
+                              getHeight() - topBottomMargin - dialHeight,
+                              dialWidth, dialHeight);
+  lowShelfFreqSlider.setBounds(getWidth() - leftRightMargin - dialWidth * 2,
+                               topBottomMargin + dialHeight / 3 * 2, dialWidth,
+                               dialHeight);
+  lowShelfGainSlider.setBounds(getWidth() - leftRightMargin - dialWidth * 2,
+                               getHeight() - topBottomMargin - dialHeight,
+                               dialWidth, dialHeight);
+  highShelfFreqSlider.setBounds(getWidth() - leftRightMargin - dialWidth,
+                                topBottomMargin + dialHeight / 3 * 2, dialWidth,
+                                dialHeight);
+  highShelfGainSlider.setBounds(getWidth() - leftRightMargin - dialWidth,
+                                getHeight() - topBottomMargin - dialHeight,
+                                dialWidth, dialHeight);
 }
 
 void ConekoAudioProcessorEditor::openButtonClicked() {
@@ -152,13 +268,29 @@ void ConekoAudioProcessorEditor::openButtonClicked() {
 
       auto *reader = formatManager.createReaderFor(file);
       if (reader != nullptr) {
-        audioProcessor.rawIRBuffer.setSize(
+        audioProcessor.setIRBufferSize(
             static_cast<int>(reader->numChannels),
             static_cast<int>(reader->lengthInSamples));
-        reader->read(&audioProcessor.rawIRBuffer, 0,
+        reader->read(&audioProcessor.getOriginalIR(), 0,
                      static_cast<int>(reader->lengthInSamples), 0, true, true);
         audioProcessor.loadImpulseResponse();
+
+        shouldPaintWaveform = true;
+        enableIRParameters = true;
+        reverseButton.setEnabled(enableIRParameters);
+        decayTimeSlider.setEnabled(enableIRParameters);
+        repaint();
       }
     }
   });
+}
+
+void ConekoAudioProcessorEditor::createLabel(juce::Label &label,
+                                             juce::String text,
+                                             juce::Component *slider) {
+  addAndMakeVisible(label);
+  label.setText(text, juce::dontSendNotification);
+  label.setJustificationType(juce::Justification::centred);
+  label.setBorderSize(juce::BorderSize<int>(0));
+  label.attachToComponent(slider, false);
 }
