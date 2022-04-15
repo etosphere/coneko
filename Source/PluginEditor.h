@@ -78,6 +78,7 @@ private:
   std::unique_ptr<APVTS::SliderAttachment> highShelfGainSliderAttachment;
 
   void openButtonClicked();
+  void createSlider(juce::Slider &slider, juce::String textValueSuffix);
   void createLabel(juce::Label &label, juce::String text,
                    juce::Component *slider);
 

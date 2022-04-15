@@ -46,39 +46,22 @@ ConekoAudioProcessorEditor::ConekoAudioProcessorEditor(ConekoAudioProcessor &p)
   bypassButtonAttachment = std::make_unique<APVTS::ButtonAttachment>(
       audioProcessor.apvts, "Bypassed", bypassButton);
 
-  addAndMakeVisible(inputGainSlider);
-  inputGainSlider.setSliderStyle(sliderStyle);
-  inputGainSlider.setTextValueSuffix(" dB");
-  inputGainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 15);
-  // inputLevelSlider.setPopupDisplayEnabled(true, true, this);
+  createSlider(inputGainSlider, " dB");
   createLabel(inputGainLabel, "Input", &inputGainSlider);
   inputGainSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "InputGain", inputGainSlider);
 
-  addAndMakeVisible(outputGainSlider);
-  outputGainSlider.setSliderStyle(sliderStyle);
-  outputGainSlider.setTextValueSuffix(" dB");
-  outputGainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 15);
-  // outputLevelSlider.setPopupDisplayEnabled(true, true, this);
+  createSlider(outputGainSlider, " dB");
   createLabel(outputGainLabel, "Output", &outputGainSlider);
   outputGainSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "OutputGain", outputGainSlider);
 
-  addAndMakeVisible(dryWetMixSlider);
-  dryWetMixSlider.setSliderStyle(sliderStyle);
-  dryWetMixSlider.setTextValueSuffix(" %");
-  dryWetMixSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 15);
-  // wetMixSlider.setPopupDisplayEnabled(true, true, this);
+  createSlider(dryWetMixSlider, " %");
   createLabel(dryWetMixLabel, "Mix", &dryWetMixSlider);
   dryWetMixSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "DryWetMix", dryWetMixSlider);
 
-  addAndMakeVisible(decayTimeSlider);
-  decayTimeSlider.setSliderStyle(sliderStyle);
-  decayTimeSlider.setTextValueSuffix(" s");
-  decayTimeSlider.setTextBoxStyle(
-      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
-  // decayTimeSlider.setPopupDisplayEnabled(true, true, this);
+  createSlider(decayTimeSlider, " s");
   decayTimeSlider.setEnabled(enableIRParameters);
   decayTimeSlider.onDragEnd = [this] {
     audioProcessor.updateIRParameters();
@@ -89,12 +72,7 @@ ConekoAudioProcessorEditor::ConekoAudioProcessorEditor(ConekoAudioProcessor &p)
   decayTimeSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "DecayTime", decayTimeSlider);
 
-  addAndMakeVisible(preDelayTimeSlider);
-  preDelayTimeSlider.setSliderStyle(sliderStyle);
-  preDelayTimeSlider.setTextValueSuffix(" ms");
-  preDelayTimeSlider.setTextBoxStyle(
-      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
-  // preDelayTimeSlider.setPopupDisplayEnabled(true, true, this);
+  createSlider(preDelayTimeSlider, " ms");
   // preDelayTimeSlider.onDragEnd = [this] {
   //  audioProcessor.updateIRParameters();
   //  shouldPaintWaveform = true;
@@ -104,52 +82,27 @@ ConekoAudioProcessorEditor::ConekoAudioProcessorEditor(ConekoAudioProcessor &p)
   preDelayTimeSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "PreDelayTime", preDelayTimeSlider);
 
-  addAndMakeVisible(stereoWidthSlider);
-  stereoWidthSlider.setSliderStyle(sliderStyle);
-  stereoWidthSlider.setTextValueSuffix(" %");
-  stereoWidthSlider.setTextBoxStyle(
-      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
-  // stereoWidthSlider.setPopupDisplayEnabled(true, true, this);
+  createSlider(stereoWidthSlider, " %");
   createLabel(stereoWidthLabel, "Width", &stereoWidthSlider);
   stereoWidthSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "StereoWidth", stereoWidthSlider);
 
-  addAndMakeVisible(lowShelfFreqSlider);
-  lowShelfFreqSlider.setSliderStyle(sliderStyle);
-  lowShelfFreqSlider.setTextValueSuffix(" Hz");
-  lowShelfFreqSlider.setTextBoxStyle(
-      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
-  // lowShelfFreqSlider.setPopupDisplayEnabled(true, true, this);
+  createSlider(lowShelfFreqSlider, " Hz");
   createLabel(lowShelfFreqLabel, "LowFreq", &lowShelfFreqSlider);
   lowShelfFreqSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "LowShelfFreq", lowShelfFreqSlider);
 
-  addAndMakeVisible(lowShelfGainSlider);
-  lowShelfGainSlider.setSliderStyle(sliderStyle);
-  lowShelfGainSlider.setTextValueSuffix(" dB");
-  lowShelfGainSlider.setTextBoxStyle(
-      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
-  // lowShelfFreqSlider.setPopupDisplayEnabled(true, true, this);
+  createSlider(lowShelfGainSlider, " dB");
   createLabel(lowShelfGainLabel, "LowGain", &lowShelfGainSlider);
   lowShelfGainSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "LowShelfGain", lowShelfGainSlider);
 
-  addAndMakeVisible(highShelfFreqSlider);
-  highShelfFreqSlider.setSliderStyle(sliderStyle);
-  highShelfFreqSlider.setTextValueSuffix(" Hz");
-  highShelfFreqSlider.setTextBoxStyle(
-      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
-  // highShelfFreqSlider.setPopupDisplayEnabled(true, true, this);
+  createSlider(highShelfFreqSlider, " Hz");
   createLabel(highShelfFreqLabel, "HighFreq", &highShelfFreqSlider);
   highShelfFreqSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "HighShelfFreq", highShelfFreqSlider);
 
-  addAndMakeVisible(highShelfGainSlider);
-  highShelfGainSlider.setSliderStyle(sliderStyle);
-  highShelfGainSlider.setTextValueSuffix(" dB");
-  highShelfGainSlider.setTextBoxStyle(
-      juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, 60, 15);
-  // lowShelfFreqSlider.setPopupDisplayEnabled(true, true, this);
+  createSlider(highShelfGainSlider, " dB");
   createLabel(highShelfGainLabel, "HighGain", &highShelfGainSlider);
   highShelfGainSliderAttachment = std::make_unique<APVTS::SliderAttachment>(
       audioProcessor.apvts, "HighShelfGain", highShelfGainSlider);
@@ -286,6 +239,16 @@ void ConekoAudioProcessorEditor::openButtonClicked() {
       }
     }
   });
+}
+
+void ConekoAudioProcessorEditor::createSlider(juce::Slider &slider,
+                                              juce::String textValueSuffix) {
+  addAndMakeVisible(slider);
+  slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+  slider.setTextValueSuffix(textValueSuffix);
+  slider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow,
+                         false, 60, 15);
+  // slider.setPopupDisplayEnabled(true, true, this);
 }
 
 void ConekoAudioProcessorEditor::createLabel(juce::Label &label,
